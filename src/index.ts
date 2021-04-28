@@ -7,5 +7,3 @@ realEyes.listen(
   environment.PORT,
   () => logger.info(`RealEyes server running on port: ${environment.PORT}`)
 );
-
-export default realEyes;

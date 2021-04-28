@@ -7,6 +7,11 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "serve-debug": "nodemon --inspect=9221 --require ts-node/register src/."
   },
+  "nodemonConfig": {
+    "ignore": ["**/*.test.ts", "**/*.spec.ts", "node_modules"],
+    "watch": ["src"],
+    "ext": "ts"
+  },
   "author": "Qudus Yekeen",
   "license": "MIT",
   "devDependencies": {
