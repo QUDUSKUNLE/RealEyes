@@ -13,5 +13,9 @@ export default class RealEyesRoutes {
     app
       .route('/home')
       .get(this.realEyesController.realEyesHome);
+
+    app
+      .route('/api/v1/info')
+      .get(this.realEyesController.realEyesInfo);
   }
 }
