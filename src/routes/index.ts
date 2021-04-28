@@ -9,13 +9,17 @@ export default class RealEyesRoutes {
     this.realEyesController = new RealEyesController();
   }
 
-  bindRoutes(app: Application) {
-    app
+  bindRoutes(realEyes: Application) {
+    realEyes
       .route('/home')
       .get(this.realEyesController.realEyesHome);
 
-    app
+    realEyes
       .route('/api/v1/info')
       .get(this.realEyesController.realEyesInfo);
+
+    realEyes
+      .route('/api/v1/metadata')
+      .get(this.realEyesController.probeAsset);
   }
 }
