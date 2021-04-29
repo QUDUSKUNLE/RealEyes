@@ -4,6 +4,9 @@ import { Storage } from '@google-cloud/storage';
 import { environment, googleCredentials } from '../utils';
 
 
+/**
+ * @class GoogleService handles third party usage of Google cloud services
+ */
 export default class GoogleServices {
   public readonly drive: any;
   public readonly storage: any;
@@ -31,6 +34,12 @@ export default class GoogleServices {
     })
   }
 
+  /**
+   * @method copyFileToGoogle handles upload of assets to Google Storage
+   * @param  {string} filePath
+   * @param  {} options={}
+   * @returns Promise
+   */
   public copyFileToGoogle = async (
     filePath: string,
     options = {}

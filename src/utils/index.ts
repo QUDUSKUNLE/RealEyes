@@ -18,11 +18,11 @@ const logger = bunyan.createLogger({
   ],
 });
 
-
 const googleCredentials = {
   keyFile: path.resolve(__dirname, '../services/secrets/credentials.json'),
   keyFilename: path.resolve(__dirname, '../services/secrets/credentials.json'),
 }
+
 
 const appInfo = {
   name: 'A complete, cross-platform solution to record, convert and stream audio and video',
@@ -60,5 +60,5 @@ export {
   logger,
   environment,
   appInfo,
-  googleCredentials,
+  googleCredentials
 };
