@@ -1,5 +1,6 @@
 import bunyan from 'bunyan';
 import dotenv from 'dotenv';
+import path from 'path';
 const PrettyStream = require('bunyan-pretty-stream');
 
 
@@ -15,6 +16,12 @@ const logger = bunyan.createLogger({
     }
   ],
 });
+
+
+const googleCredentials = {
+  keyFile: path.resolve(__dirname, '../credentials/credentials.json'),
+  keyFilename: path.resolve(__dirname, '../credentials/credentials.json'),
+}
 
 const appInfo = {
   name: 'A complete, cross-platform solution to record, convert and stream audio and video',
@@ -52,4 +59,5 @@ export {
   logger,
   environment,
   appInfo,
+  googleCredentials,
 };
