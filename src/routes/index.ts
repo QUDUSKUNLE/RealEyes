@@ -3,6 +3,9 @@ import { Application } from 'express';
 import RealEyesController from '../controllers';
 
 
+/**
+ * @class RealEyesRoutes handles RealEyes app routes
+ */
 export default class RealEyesRoutes {
   public readonly realEyesController: RealEyesController;
 
@@ -10,6 +13,10 @@ export default class RealEyesRoutes {
     this.realEyesController = new RealEyesController();
   }
 
+  /**
+   * @method bindRoutes to RealEyesController
+   * @param {Application} realEyes
+   */
   bindRoutes(realEyes: Application) {
     realEyes
       .route('/home')
