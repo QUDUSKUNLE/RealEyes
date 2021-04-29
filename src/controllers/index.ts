@@ -18,6 +18,9 @@ import GoogleServices from '../services';
 
 
 
+/**
+ * @class RealEyesController extends GoogleServices
+ */
 export default class RealEyesController extends GoogleServices {
   private readonly customConfig: Config;
   constructor() {
@@ -29,8 +32,17 @@ export default class RealEyesController extends GoogleServices {
     };
   }
 
+  /**
+   * @returns string
+   */
   private uniqueName = (): string => uniqueNamesGenerator(this.customConfig);
 
+  /**
+   * @param  {string} fileId
+   * @param  {string='video'} filename
+   * @param  {string='mp4'} extension
+   * @returns Promise
+   */
   private downloadFile = async (
     fileId: string,
     filename: string = 'video',
@@ -63,11 +75,15 @@ export default class RealEyesController extends GoogleServices {
             .pipe(dest);
         }))
   }
-
+  /**
+   * @param  {Request} req
+   * @param  {Response} res
+   * @returns Promise
+   */
   public realEyesHome = async (
     req: Request,
     res: Response
-  ): Promise<any> => {
+  ): Promise<object> => {
     try {
       return await res.status(200).json(
         { RealEyes: 'Welcome to RealEyes home'}
@@ -78,10 +94,15 @@ export default class RealEyesController extends GoogleServices {
     }
   }
 
+  /**
+   * @param  {Request} req
+   * @param  {Response} res
+   * @returns Promise
+   */
   public realEyesInfo = async (
     req: Request,
     res: Response
-  ): Promise<any> => {
+  ): Promise<object> => {
     try {
       return await res.status(200).json({ realEyesApp: appInfo });
     } catch (error) {
@@ -145,13 +166,19 @@ export default class RealEyesController extends GoogleServices {
           );
           break;
       };
-      await ffmpeg(result)
-        .videoBitrate(req.body.videoBitrate)
-        .videoCodec(req.body.videoCodec)
-        .output(`./uploads/${this.uniqueName()}.mp4`);
-      this.copyFileToGoogle(result);
-      const assetMetadata = await ffprobe(result, { path: ffprobeStatic.path });
-      // await fs.unlinkSync(result);
+      const newFilePath = path.join(os.tmpdir(), `/${this.uniqueName()}.avi`);
+      await new Promise((resolve: any, reject: any) => {
+        ffmpeg(result)
+          .videoBitrate(req.body.videoBitrate)
+          .videoCodec(req.body.videoCodec)
+          .on('error', (err: any) => reject(err))
+          .save(newFilePath)
+          .on('end', () => resolve('done'));
+      });
+      this.copyFileToGoogle(newFilePath);
+      const assetMetadata = await ffprobe(newFilePath, { path: ffprobeStatic.path });
+      await fs.unlinkSync(newFilePath);
+      await fs.unlinkSync(result);
       return res.status(201).json({ message: 'File uploaded to google', assetMetadata });
     } catch (error) {
       logger.error(error.message);
