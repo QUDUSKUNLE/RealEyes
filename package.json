@@ -5,7 +5,11 @@
   "main": "index.ts",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "serve-debug": "nodemon --inspect --require ts-node/register src/."
+    "serve": "node dist/.",
+    "start": "npm run build-ts && npm run tslint",
+    "build-ts": "tsc",
+    "serve-debug": "nodemon --inspect --require ts-node/register src/.",
+    "tslint": "tslint -c tslint.json -p tsconfig.json && npm run serve"
   },
   "nodemonConfig": {
     "ignore": [

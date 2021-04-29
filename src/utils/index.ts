@@ -1,6 +1,7 @@
 import bunyan from 'bunyan';
 import dotenv from 'dotenv';
 import path from 'path';
+// tslint:disable-next-line: no-var-requires
 const PrettyStream = require('bunyan-pretty-stream');
 
 
