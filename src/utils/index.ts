@@ -19,8 +19,8 @@ const logger = bunyan.createLogger({
 
 
 const googleCredentials = {
-  keyFile: path.resolve(__dirname, '../credentials/credentials.json'),
-  keyFilename: path.resolve(__dirname, '../credentials/credentials.json'),
+  keyFile: path.resolve(__dirname, '../services/secrets/credentials.json'),
+  keyFilename: path.resolve(__dirname, '../services/secrets/credentials.json'),
 }
 
 const appInfo = {

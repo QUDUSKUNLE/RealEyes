@@ -34,14 +34,14 @@ export default class GoogleServices {
   public copyFileToGoogle = async (
     filePath: string,
     options = {}
-  ): Promise<string> => {
+  ): Promise<void> => {
     try {
       const bucket = this.storage.bucket(this.bucketName);
       const fileName = path.basename(filePath);
       const file = bucket.file(fileName);
       await bucket.upload(filePath, options);
       await file.makePublic();
-      return `https://storage.googleapis.com/${this.bucketName}/${fileName}`
+      return;
     } catch (error) {
       throw error;
     }

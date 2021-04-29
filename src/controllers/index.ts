@@ -1,15 +1,15 @@
+import ffprobeStatic from 'ffprobe-static';
+import fs from 'fs';
+import path from 'path';
 import ffprobe from 'ffprobe';
 import ffmpeg from 'fluent-ffmpeg';
+import os from 'os';
 import  {
   uniqueNamesGenerator,
   Config,
   adjectives,
   colors
 }  from 'unique-names-generator';
-
-import ffprobeStatic from 'ffprobe-static';
-import fs from 'fs';
-import path from 'path';
 import { google } from 'googleapis';
 import { Request, Response } from 'express';
 
@@ -17,26 +17,28 @@ import { logger, appInfo } from '../utils';
 import GoogleServices from '../services';
 
 
-export default class RealEyesController extends GoogleServices {
-  constructor() {
-    super()
-  }
 
-  private uniqueName = async (): Promise<string> => {
-    const customConfig: Config = {
+export default class RealEyesController extends GoogleServices {
+  private readonly customConfig: Config;
+  constructor() {
+    super();
+    this.customConfig = {
       dictionaries: [adjectives, colors],
       separator: '-',
       length: 2,
     };
-    return await uniqueNamesGenerator(customConfig);
   }
+
+  private uniqueName = (): string => uniqueNamesGenerator(this.customConfig);
 
   private downloadFile = async (
     fileId: string,
     filename: string = 'video',
     extension: string = 'mp4'
   ): Promise<string> => {
-    const filePath = `./uploads/${filename}.${extension}`;
+
+    // Path that holds downloaded file
+    const filePath = path.join(os.tmpdir(), `/${filename}.${extension}`);
     const dest = fs.createWriteStream(filePath);
     google.options({ auth: this.auth });
     return this.drive.files
@@ -67,7 +69,9 @@ export default class RealEyesController extends GoogleServices {
     res: Response
   ): Promise<any> => {
     try {
-      return await res.status(200).json({ RealEyes: 'Welcome to RealEyes home'})
+      return await res.status(200).json(
+        { RealEyes: 'Welcome to RealEyes home'}
+      )
     } catch (error) {
       logger.error(error.message);
       return res.status(400).json({ message: error.message })
@@ -95,13 +99,12 @@ export default class RealEyesController extends GoogleServices {
       return res.status(400).json({ message: 'Asset link is required' });
     }
     if (typeof asset !== 'string') {
-      return res.status(400).json({ message: 'Invalid query asset' })
+      return res.status(400).json({ message: 'Invalid query asset' });
     }
     const url  = new URL(asset);
     let result: string = '';
-    let filename: string = '';
     try {
-      filename = await this.uniqueName();
+      const filename = await this.uniqueName();
       switch (url && url.hostname) {
         case 'drive.google.com':
           result = await this.downloadFile(
@@ -110,7 +113,6 @@ export default class RealEyesController extends GoogleServices {
           );
           break;
       };
-      result = path.resolve(__dirname, `../../uploads/${filename}.mp4`);
       const assetMetadata = await ffprobe(result, { path: ffprobeStatic.path });
       await fs.unlinkSync(result);
       return await res.status(200).json({ assetMetadata });
@@ -125,17 +127,16 @@ export default class RealEyesController extends GoogleServices {
     res: Response
   ): Promise<any> => {
     if (!req.body.url) {
-      return res.status(400).json({ message: 'Downloadable asset url is required'})
+      return res.status(400).json({ message: 'Downloadable asset url is required' });
     }
     if (!req.body.videoBitrate) {
       return res.status(400).json({ message: 'VideoBitrate is required' });
     }
     const url  = new URL(req.body.url);
     let result: string = '';
-    let filename: string = '';
-    if (!req.body.videoCodec) req.body.videoCodec = 'libx264'
+    if (!req.body.videoCodec) req.body.videoCodec = 'libx264';
     try {
-      filename = await this.uniqueName();
+      const filename = await this.uniqueName();
       switch (url && url.hostname) {
         case 'drive.google.com':
           result = await this.downloadFile(
@@ -144,25 +145,17 @@ export default class RealEyesController extends GoogleServices {
           );
           break;
       };
-      result = path.resolve(__dirname, `../../uploads/${filename}.mp4`);
       await ffmpeg(result)
         .videoBitrate(req.body.videoBitrate)
         .videoCodec(req.body.videoCodec)
-        .output(result);
-      await this.copyFileToGoogle(result)
-      return res.status(201).json({ message: 'File uploaded to google' });
+        .output(`./uploads/${this.uniqueName()}.mp4`);
+      this.copyFileToGoogle(result);
+      const assetMetadata = await ffprobe(result, { path: ffprobeStatic.path });
+      // await fs.unlinkSync(result);
+      return res.status(201).json({ message: 'File uploaded to google', assetMetadata });
     } catch (error) {
       logger.error(error.message);
-      return res.status(400).json({ message: error.message })
-    }
-  }
-
-  public uploadGoogleCloud = async (req: Request, res: Response) => {
-    try {
-      return await res.status(200).json({ message: true })
-    } catch (error) {
-      logger.error(error.message);
-      return res.status(400).json({ error: error.message });
+      return res.status(400).json({ message: error.message });
     }
   }
 }
