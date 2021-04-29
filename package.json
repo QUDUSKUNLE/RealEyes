@@ -5,7 +5,11 @@
   "main": "index.ts",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "serve-debug": "nodemon --inspect=9221 --require ts-node/register src/."
+    "serve": "node dist/.",
+    "start": "npm run build-ts && npm run tslint",
+    "build-ts": "tsc",
+    "serve-debug": "nodemon --inspect --require ts-node/register src/.",
+    "tslint": "tslint -c tslint.json -p tsconfig.json && npm run serve"
   },
   "nodemonConfig": {
     "ignore": [
@@ -32,7 +36,7 @@
     "@types/ffmpeg": "^1.0.4",
     "@types/ffprobe": "^1.1.1",
     "@types/ffprobe-static": "^2.0.0",
-    "@types/uuid": "^8.3.0",
+    "@types/fluent-ffmpeg": "^2.1.17",
     "bunyan": "^1.8.15",
     "bunyan-pretty-stream": "^1.0.1",
     "nodemon": "^2.0.7",
@@ -42,14 +46,15 @@
   "dependencies": {
     "@ffmpeg/core": "^0.8.5",
     "@ffmpeg/ffmpeg": "^0.9.7",
-    "@google-cloud/local-auth": "^1.0.1",
+    "@google-cloud/storage": "^5.8.4",
     "body-parser": "^1.19.0",
     "cors": "^2.8.5",
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
     "ffprobe": "^1.1.2",
     "ffprobe-static": "^3.0.0",
+    "fluent-ffmpeg": "^2.1.2",
     "googleapis": "^72.0.0",
-    "uuidv4": "^6.2.7"
+    "unique-names-generator": "^4.4.0"
   }
 }

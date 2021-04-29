@@ -1,4 +1,5 @@
 import { Application } from 'express';
+
 import RealEyesController from '../controllers';
 
 
@@ -21,5 +22,9 @@ export default class RealEyesRoutes {
     realEyes
       .route('/api/v1/metadata')
       .get(this.realEyesController.probeAsset);
+
+    realEyes
+      .route('/api/v1/encode')
+      .post(this.realEyesController.encodeAsset);
   }
 }
