@@ -111,10 +111,15 @@ export default class RealEyesController extends GoogleServices {
     }
   }
 
+  /**
+   * @param  {Request} req
+   * @param  {Response} res
+   * @returns Promise
+   */
   public probeAsset = async (
     req: Request,
     res: Response
-  ): Promise<any> => {
+  ): Promise<object> => {
     const { asset } = req.query;
     if (!asset) {
       return res.status(400).json({ message: 'Asset link is required' });
@@ -143,10 +148,15 @@ export default class RealEyesController extends GoogleServices {
     }
   }
 
+  /**
+   * @param  {Request} req
+   * @param  {Response} res
+   * @returns Promise
+   */
   public encodeAsset = async (
     req: Request,
     res: Response
-  ): Promise<any> => {
+  ): Promise<object> => {
     if (!req.body.url) {
       return res.status(400).json({ message: 'Downloadable asset url is required' });
     }
