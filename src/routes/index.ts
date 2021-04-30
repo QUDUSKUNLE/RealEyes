@@ -19,7 +19,7 @@ export default class RealEyesRoutes {
    */
   bindRoutes(realEyes: Application) {
     realEyes
-      .route('/home')
+      .route('/api/v1/home')
       .get(this.realEyesController.realEyesHome);
 
     realEyes
