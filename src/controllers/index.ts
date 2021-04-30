@@ -1,9 +1,7 @@
-import ffprobeStatic from 'ffprobe-static';
-import fs from 'fs';
 import path from 'path';
-import ffprobe from 'ffprobe';
 import ffmpeg from 'fluent-ffmpeg';
 import os from 'os';
+import { createWriteStream, unlinkSync } from 'fs';
 import  {
   uniqueNamesGenerator,
   Config,
@@ -15,7 +13,6 @@ import { Request, Response } from 'express';
 
 import { logger, appInfo } from '../utils';
 import GoogleServices from '../services';
-
 
 
 /**
@@ -44,37 +41,87 @@ export default class RealEyesController extends GoogleServices {
    * @returns Promise
    */
   private downloadFile = async (
-    fileId: string,
-    filename: string = 'video',
+    asset: string,
     extension: string = 'mp4'
   ): Promise<string> => {
-
-    // Path that holds downloaded file
-    const filePath = path.join(os.tmpdir(), `/${filename}.${extension}`);
-    const dest = fs.createWriteStream(filePath);
-    google.options({ auth: this.auth });
-    return this.drive.files
-      .get({ fileId, alt: 'media' }, { responseType: 'stream'})
-      .then((res: any) =>
-        new Promise((resolve: any, reject: any) => {
-          let progress: number = 0;
-          res.data
-            .on('end', () => {
-              resolve(filePath);
-            })
-            .on('error', (err: any) => {
-              reject(err)
-            })
-            .on('data', (data: any) => {
-              progress += data.length;
-              if (process.stdout.isTTY) {
-                process.stdout.cursorTo(0);
-                process.stdout.write(`Downloaded ${progress} bytes`);
-              }
-            })
-            .pipe(dest);
-        }))
+    const url  = new URL(asset);
+    let result: string = ''
+    const filename = await this.uniqueName();
+    switch (url && url.hostname) {
+      case 'drive.google.com':
+        const fileId = url.pathname.split('/')[3];
+        const filePath = path.join(os.tmpdir(), `/${filename}.${extension}`);
+        const destination = createWriteStream(filePath);
+        google.options({ auth: this.auth });
+        result = this.drive.files
+          .get({ fileId, alt: 'media' }, { responseType: 'stream'})
+          .then((res: any) =>
+            new Promise((resolve: any, reject: any) => {
+              let progress: number = 0;
+              res.data
+                .on('end', () => resolve(filePath))
+                .on('error', (err: any) => reject(err))
+                .on('data', (data: any) => {
+                  progress += data.length;
+                  if (process.stdout.isTTY) {
+                    process.stdout.cursorTo(0);
+                    process.stdout.write(`Downloaded ${progress} bytes`);
+                  }
+                })
+                .pipe(destination);
+            }))
+        break;
+      default:
+        break;
+    };
+    return result;
   }
+
+  /**
+   * @param  {string} filePath
+   * @returns Promise
+   */
+  private probeFile = (
+    filePath: string
+  ): Promise<{}> =>
+    new Promise((
+      resolve: any,
+      reject: any
+    ) => {
+      ffmpeg.ffprobe(
+        filePath,
+        (err: any, metadata: {}) => {
+          if (err) reject(err);
+          resolve(metadata);
+        }
+      );
+  })
+
+  /**
+   * @param  {string} filePath
+   * @param  {string} newFilePath
+   * @param  {string} videoBitrate
+   * @param  {string} videoCodec
+   * @returns Promise
+   */
+  private encodeFile = (
+    filePath: string,
+    newFilePath: string,
+    videoBitrate: string,
+    videoCodec: string
+  ): Promise<string> =>
+    new Promise((
+      resolve: any,
+      reject: any
+    ) => {
+      ffmpeg(filePath)
+        .videoBitrate(videoBitrate)
+        .videoCodec(videoCodec)
+        .on('error', (err: any) => reject(err))
+        .save(newFilePath)
+        .on('end', () => resolve('done'));
+  });
+
   /**
    * @param  {Request} req
    * @param  {Response} res
@@ -127,21 +174,11 @@ export default class RealEyesController extends GoogleServices {
     if (typeof asset !== 'string') {
       return res.status(400).json({ message: 'Invalid query asset' });
     }
-    const url  = new URL(asset);
-    let result: string = '';
     try {
-      const filename = await this.uniqueName();
-      switch (url && url.hostname) {
-        case 'drive.google.com':
-          result = await this.downloadFile(
-            url.pathname.split('/')[3],
-            filename
-          );
-          break;
-      };
-      const assetMetadata = await ffprobe(result, { path: ffprobeStatic.path });
-      await fs.unlinkSync(result);
-      return await res.status(200).json({ assetMetadata });
+      const filePath = await this.downloadFile(asset);
+      const metadata = await this.probeFile(filePath);
+      await unlinkSync(filePath);
+      return await res.status(200).json({ metadata });
     } catch (err) {
       logger.error(err.message);
       return res.status(400).json({ message: err.message });
@@ -163,32 +200,16 @@ export default class RealEyesController extends GoogleServices {
     if (!req.body.videoBitrate) {
       return res.status(400).json({ message: 'VideoBitrate is required' });
     }
-    const url  = new URL(req.body.url);
-    let result: string = '';
     if (!req.body.videoCodec) req.body.videoCodec = 'libx264';
+    const { videoCodec, videoBitrate } = req.body;
     try {
-      const filename = await this.uniqueName();
-      switch (url && url.hostname) {
-        case 'drive.google.com':
-          result = await this.downloadFile(
-            url.pathname.split('/')[3],
-            filename
-          );
-          break;
-      };
+      const result = await this.downloadFile(req.body.url)
       const newFilePath = path.join(os.tmpdir(), `/${this.uniqueName()}.avi`);
-      await new Promise((resolve: any, reject: any) => {
-        ffmpeg(result)
-          .videoBitrate(req.body.videoBitrate)
-          .videoCodec(req.body.videoCodec)
-          .on('error', (err: any) => reject(err))
-          .save(newFilePath)
-          .on('end', () => resolve('done'));
-      });
+      await this.encodeFile(result, newFilePath, videoBitrate, videoCodec);
       this.copyFileToGoogle(newFilePath);
-      const assetMetadata = await ffprobe(newFilePath, { path: ffprobeStatic.path });
-      await fs.unlinkSync(newFilePath);
-      await fs.unlinkSync(result);
+      const assetMetadata = await this.probeFile(newFilePath);
+      await unlinkSync(newFilePath);
+      await unlinkSync(result);
       return res.status(201).json({ message: 'File uploaded to google', assetMetadata });
     } catch (error) {
       logger.error(error.message);
