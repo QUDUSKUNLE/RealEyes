@@ -1,5 +1,5 @@
 # RealEyes
-A Simple RESTful API that encode .mp4 files to specific codec format and bitrate
+A Simple RESTful API that encode `.mp4` files to specific codec format and bitrate
 
 ## Installation
 Clone the repository by running 
@@ -32,10 +32,29 @@ $ RealEyes server running on port: {PORT}
 
 Access available endpoints via
 ```sh
-$ curl localhost:{PORT}/api/v1/info
+$ curl get localhost:{PORT}/api/v1/info
 ```
 
-Improvements
+Alternatively, one can run the application in docker container, build the docker image by running this
+```sh
+$ sh build_realeyes.sh
+```
+or
+```sh
+$ npm run build-realeyes
+```
+
+then start the realEyes app;
+```sh
+$ sh startdocker.sh
+```
+or
+```sh
+$ npm run start-docker
+```
+
+
+Improvements:
   1. Looking for a way to probe asset stream without saving the asset on the machine, incase if the asset is big, not efficient right now.
   2. Queue asset uploads to Google Cloud Storage
 
