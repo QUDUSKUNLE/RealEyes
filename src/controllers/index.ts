@@ -1,7 +1,7 @@
 import path from 'path';
 import ffmpeg from 'fluent-ffmpeg';
 import os from 'os';
-import { createWriteStream, unlinkSync, unlink } from 'fs';
+import { createWriteStream, unlinkSync } from 'fs';
 import  {
   uniqueNamesGenerator,
   Config,
@@ -137,7 +137,7 @@ export default class RealEyesController extends GoogleServices {
       )
     } catch (error) {
       logger.error(error.message);
-      return res.status(400).json({ message: error.message })
+      return res.status(500).json({ message: error.message })
     }
   }
 
@@ -154,7 +154,7 @@ export default class RealEyesController extends GoogleServices {
       return await res.status(200).json({ realEyesApp: appInfo });
     } catch (error) {
       logger.error(error.message);
-      return res.status(400).json({ message: error.message });
+      return res.status(500).json({ message: error.message });
     }
   }
 
@@ -182,7 +182,7 @@ export default class RealEyesController extends GoogleServices {
       return res.status(200).json({ metadata });
     } catch (err) {
       logger.error(err.message);
-      return res.status(400).json({ message: err.message });
+      return res.status(500).json({ message: err.message });
     }
   }
 
@@ -212,10 +212,10 @@ export default class RealEyesController extends GoogleServices {
       const assetMetadata = await this.probeFile(newFilePath);
       unlinkSync(newFilePath);
       unlinkSync(result);
-      return res.status(201).json({ message: 'File uploaded to google', assetMetadata });
+      return res.status(200).json({ message: 'File uploaded to google', assetMetadata });
     } catch (error) {
       logger.error(error.message);
-      return res.status(400).json({ message: error.message });
+      return res.status(500).json({ message: error.message });
     }
   }
 }
