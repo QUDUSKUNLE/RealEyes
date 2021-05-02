@@ -4,7 +4,7 @@
   "description": "realeyes ffmpeg application challenge",
   "main": "index.ts",
   "scripts": {
-    "docker-build": "docker build -t boluwatife/realeyes .",
+    "build-realeyes": "docker build -t boluwatife/realeyes .",
     "start-docker": "docker run -p 8080:4000 -d boluwatife/realeyes",
     "serve": "node dist/.",
     "build": "npm run build-ts && npm run tslint",
