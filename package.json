@@ -4,7 +4,8 @@
   "description": "realeyes ffmpeg application challenge",
   "main": "index.ts",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "docker-build": "docker build -t boluwatife/realeyes .",
+    "start-docker": "docker run -p 8080:4000 -d boluwatife/realeyes",
     "serve": "node dist/.",
     "build": "npm run build-ts && npm run tslint",
     "build-ts": "tsc",
@@ -40,7 +41,6 @@
     "@types/ffmpeg": "1.0.4",
     "@types/ffmpeg-installer__ffmpeg": "1.0.0",
     "@types/ffprobe": "1.1.1",
-    "@types/ffprobe-static": "2.0.0",
     "@types/fluent-ffmpeg": "2.1.17",
     "bunyan": "1.8.15",
     "bunyan-pretty-stream": "1.0.1",

@@ -1,7 +1,7 @@
 import path from 'path';
 import ffmpeg from 'fluent-ffmpeg';
 import os from 'os';
-import { createWriteStream, unlinkSync } from 'fs';
+import { createWriteStream, unlinkSync, unlink } from 'fs';
 import  {
   uniqueNamesGenerator,
   Config,
@@ -40,7 +40,7 @@ export default class RealEyesController extends GoogleServices {
    * @param  {string='mp4'} extension
    * @returns Promise
    */
-  private downloadFile = async (
+  private downloadAsset = async (
     asset: string,
     extension: string = 'mp4'
   ): Promise<string> => {
@@ -60,7 +60,7 @@ export default class RealEyesController extends GoogleServices {
               let progress: number = 0;
               res.data
                 .on('end', () => resolve(filePath))
-                .on('error', (err: any) => reject(err))
+                .on('error', (err: any) => reject(new Error(err)))
                 .on('data', (data: any) => {
                   progress += data.length;
                   if (process.stdout.isTTY) {
@@ -68,7 +68,7 @@ export default class RealEyesController extends GoogleServices {
                     process.stdout.write(`Downloaded ${progress} bytes`);
                   }
                 })
-                .pipe(destination);
+                .pipe(destination)
             }))
         break;
       default:
@@ -91,7 +91,7 @@ export default class RealEyesController extends GoogleServices {
       ffmpeg.ffprobe(
         filePath,
         (err: any, metadata: {}) => {
-          if (err) reject(err);
+          if (err) reject(new Error(err));
           resolve(metadata);
         }
       );
@@ -117,7 +117,7 @@ export default class RealEyesController extends GoogleServices {
       ffmpeg(filePath)
         .videoBitrate(videoBitrate)
         .videoCodec(videoCodec)
-        .on('error', (err: any) => reject(err))
+        .on('error', (err: any) => reject(new Error(err)))
         .save(newFilePath)
         .on('end', () => resolve('done'));
   });
@@ -175,10 +175,11 @@ export default class RealEyesController extends GoogleServices {
       return res.status(400).json({ message: 'Invalid query asset' });
     }
     try {
-      const filePath = await this.downloadFile(asset);
+      await new URL(asset);
+      const filePath = await this.downloadAsset(asset);
       const metadata = await this.probeFile(filePath);
-      await unlinkSync(filePath);
-      return await res.status(200).json({ metadata });
+      unlinkSync(filePath);
+      return res.status(200).json({ metadata });
     } catch (err) {
       logger.error(err.message);
       return res.status(400).json({ message: err.message });
@@ -203,13 +204,14 @@ export default class RealEyesController extends GoogleServices {
     if (!req.body.videoCodec) req.body.videoCodec = 'libx264';
     const { videoCodec, videoBitrate } = req.body;
     try {
-      const result = await this.downloadFile(req.body.url)
+      await new URL(req.body.url);
+      const result = await this.downloadAsset(req.body.url);
       const newFilePath = path.join(os.tmpdir(), `/${this.uniqueName()}.avi`);
       await this.encodeFile(result, newFilePath, videoBitrate, videoCodec);
       this.copyFileToGoogle(newFilePath);
       const assetMetadata = await this.probeFile(newFilePath);
-      await unlinkSync(newFilePath);
-      await unlinkSync(result);
+      unlinkSync(newFilePath);
+      unlinkSync(result);
       return res.status(201).json({ message: 'File uploaded to google', assetMetadata });
     } catch (error) {
       logger.error(error.message);

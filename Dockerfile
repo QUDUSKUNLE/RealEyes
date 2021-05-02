@@ -1,19 +1,26 @@
-FROM node:14-alpine
+# Speciy node version
+FROM node:14
 
-RUN npm install pm2 -g
+# Create a directory
+RUN mkdir -p /usr/src/app
 
-RUN mkdir -p /usr/src
+# Working directory
+WORKDIR /usr/src/app
 
-WORKDIR /usr/src
-
+# Copy dependencies
 COPY package*.json ./
 
+# Install dependencies
 RUN npm i
 
-COPY src src
-
+# Copy environment variables
 COPY .env .env
 
-EXPOSE 2020
+# bundle the app
+COPY . .
 
+# Expose the app
+EXPOSE 4000
+
+# Run the app
 CMD ["npm", "start"]
