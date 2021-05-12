@@ -2,9 +2,9 @@ name: RealEyes CI
 
 on:
   push:
-    branches: [ master, develop, staging ]
+    branches: [ main, develop, staging ]
   pull_request:
-    branches: [ master, develop, staging ]
+    branches: [ main, develop, staging ]
 
 jobs:
   build:
