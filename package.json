@@ -9,9 +9,9 @@
     "serve": "node dist/.",
     "build": "npm run build-ts && npm run tslint",
     "build-ts": "tsc",
-    "start": "node --require ts-node/register src/.",
+    "start": "npm run build-ts && npm run serve",
     "serve-debug": "nodemon --inspect --require ts-node/register src/.",
-    "tslint": "tslint -c tslint.json -p tsconfig.json && npm run serve"
+    "tslint": "tslint -c tslint.json -p tsconfig.json"
   },
   "nodemonConfig": {
     "ignore": [
