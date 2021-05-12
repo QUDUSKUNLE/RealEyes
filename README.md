@@ -28,7 +28,7 @@ Start RealEyes app.
 $ npm run build
 ```
 
-RealEyes app should be running on the specifiied `PORT` in `.env`.
+RealEyes app should be running on the specified `PORT` in `.env`.
 ```sh
 $ RealEyes server running on port: {PORT}
 ```
