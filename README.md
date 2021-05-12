@@ -1,4 +1,7 @@
 # RealEyes
+[![RealEyes CI](https://github.com/QUDUSKUNLE/RealEyes/actions/workflows/main.yml/badge.svg)](https://github.com/QUDUSKUNLE/RealEyes/actions/workflows/main.yml)
+
+
 A Simple RESTful API that encode `.mp4` files to specific codec format and bitrate
 
 ## Installation
