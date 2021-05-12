@@ -1,4 +1,7 @@
 # RealEyes
+[![RealEyes CI](https://github.com/QUDUSKUNLE/RealEyes/actions/workflows/main.yml/badge.svg)](https://github.com/QUDUSKUNLE/RealEyes/actions/workflows/main.yml)
+
+
 A Simple RESTful API that encode `.mp4` files to specific codec format and bitrate
 
 ## Installation
@@ -25,7 +28,7 @@ Start RealEyes app.
 $ npm run build
 ```
 
-RealEyes app should be running on the specifiied `PORT` in `.env`.
+RealEyes app should be running on the specified `PORT` in `.env`.
 ```sh
 $ RealEyes server running on port: {PORT}
 ```
